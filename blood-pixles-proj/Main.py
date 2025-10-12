@@ -4,6 +4,8 @@
 # --- IMPORTS --- #
 import pygame
 import os # used to load image files in "image-files"
+import random # used to RNG update order
+import time # debug timers
 
 
 # --- SETUP VARIABLES --- #
@@ -50,6 +52,11 @@ def drawBasics():
     # ~ 108 x 108 pixel square
 
     pygame.display.flip()
+    return
+
+def drawCards(cardSet):
+    # draw cards
+    return
 
 
 # --- MAIN LOOP --- #
@@ -62,9 +69,10 @@ while running:
 
     # user input turn
     player = 1
-    while player > 0:
+    while(player > 0):
 
         drawBasics() # draw background, draw Guy positions
+
         if player == 1:
             # player 1 setup
             # blank right half of screen
@@ -77,27 +85,54 @@ while running:
             pygame.draw.rect(screen, "black", (0, 0, windowWidth/2, windowHeight))
             # pull up P2 cards
 
-        # do stuff with cards
+        pygame.display.flip()
 
+        # do stuff with cards
+        time.sleep(2) # simulate decision time
 
         # END OF TURN
-        # if player == 1:
+        if player == 1:
             # blank whole screen
             # prompt for P2
+            player = 2
 
-        # if player == 2:
+        else: # player 2
             # exit while loop
-            # player = -1
+            player = -1
+            break
 
+    print("left the loop!")
     # run game logic
-    for row in gameGrid:
-        for guy in row:
-            guy.update()
+    positionsUpdated = 0
+    updateTracker = [ #array to make sure every guy gets updated, even at random
+        [0, 0, 0, 0, 0, 0], 
+        [0, 0, 0, 0, 0, 0], 
+        [0, 0, 0, 0, 0, 0], 
+        [0, 0, 0, 0, 0, 0], 
+        [0, 0, 0, 0, 0, 0]
+    ]
 
+    while (positionsUpdated < (5*6)):
+        # view random position
+        x = random.randint(0, 4)
+        y = random.randint(0, 5)
+
+        while(updateTracker[x][y] == 1): # if grid square has already been updated, generate new position
+            x = random.randint(0, 4)
+            y = random.randint(0, 5)
+        
+        if(gameGrid[x][y] != 0): # there is a guy at x, y
+            # (gameGrid[x][y]).update() # update guy
+            drawBasics()
+            print("Updated on Guy.")
+            time.sleep(0.1) # simulate guy update/animation time
+
+        updateTracker[x][y] = 1 # mark grid square as updated
+        positionsUpdated += 1
+
+    print("end of 'running' loop.")
     drawBasics()
-
-    print("hello world")
-
+    time.sleep(2) # DEBUG
     # flip() the display to put your work on screen
     pygame.display.flip()
     clock.tick(60)  # limits FPS to 60
