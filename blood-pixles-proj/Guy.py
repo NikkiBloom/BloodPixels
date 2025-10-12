@@ -6,7 +6,7 @@ class Guy:
 
     @abstractmethod
     def __init__(self):
-        self.position
+        #self.position
         self.range
         self.health
         self.damage
