@@ -19,11 +19,11 @@ gameGrid = [ # represents game grid. 0 represents an empty position.
 ]
 
 # 0 - empty, 1 - melee, 2 - ranged, 3 - special
-player1Cards = [0, 0, 0, 0]
-player2Cards = [0, 0, 0, 0]
+player1Cards = [0, 0, 0]
+player2Cards = [0, 0, 0]
 def drawCards(cardSet):
-    for card in cardSet:
-        card = random.randint(1, 3)
+    for i in range(len(cardSet)):
+        cardSet[i] = random.randint(1, 3)
 
 # Window setup
 pygame.init()
@@ -44,12 +44,13 @@ background_image = pygame.transform.scale(background_image, (windowWidth, window
 # arrays for sprite sets
 def makeSprites(type):
     image_folder_path = os.path.join(current_dir, 'image-files', type) # pulls correct image folder path
-        
+    
     # put images into spriteSet array for animation
-    spriteSet = [pygame.image.load(os.path.join(image_folder_path, 'stand')),
-                    pygame.image.load(os.path.join(image_folder_path, 'walk1')),
-                    pygame.image.load(os.path.join(image_folder_path, 'walk2')),
-                pygame.image.load(os.path.join(image_folder_path, 'attack'))]
+    spriteSet = [pygame.image.load(os.path.join(image_folder_path, '0_stand.png')),
+                    # pygame.image.load(os.path.join(image_folder_path, '1_walk1.png')),
+                    # pygame.image.load(os.path.join(image_folder_path, '2_walk2.png')),
+                #pygame.image.load(os.path.join(image_folder_path, '3_attack.png'))]
+                ]
     
     return spriteSet
 # make sprite sheets
@@ -88,7 +89,7 @@ def getTrueCoord(row, guy, gameGrid):
 
     return x, y
 
-def drawBasics(notThisGuy):
+def drawBasics(notThisGuy = -1):
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     # load in background
@@ -106,11 +107,11 @@ def drawBasics(notThisGuy):
                     rect = image.get_rect()
                     rect.center = (x, y)
                     screen.blit(guy.sprites[0], (x,y))
-
     pygame.display.flip()
     return
 
 def animateAction(guy, mode, detail, x, y):
+    '''
     x, y = getTrueCoord(x, y)
 
     if(mode == "attack"):
@@ -157,6 +158,7 @@ def animateAction(guy, mode, detail, x, y):
             i = i - (108/FRAMES)
 
             pygame.display.flip()
+            '''
     return
 
 # --- MAIN LOOP --- #
@@ -174,15 +176,23 @@ while running:
         drawBasics() # draw background, draw Guy positions
 
         if player == 1:
+            print("Main.py: Player 1's turn.")
             # player 1 setup
             drawCards(player1Cards)
+            print("Main.py: P1 drew the cards:")
+            for card in player1Cards:
+                print(card)
             # blank right half of screen
             pygame.draw.rect(screen, "black", (windowWidth/2, 0, windowWidth/2, windowHeight))
             # pull up P1 cards
         
         if player == 2:
+            print("Main.py: Player 2's turn.")
             # player 2 setup
             drawCards(player2Cards)
+            print("Main.py: P2 drew the cards:")
+            for card in player2Cards:
+                print(card)
             # blank left half of screen
             pygame.draw.rect(screen, "black", (0, 0, windowWidth/2, windowHeight))
             # pull up P2 cards
@@ -192,9 +202,9 @@ while running:
             # update guy.player
 
         pygame.display.flip()
-
+        
         # do stuff with cards
-        time.sleep(2) # simulate decision time
+        time.sleep(2) # DEBUG: simulate "decision time" of players
 
         # END OF TURN
         if player == 1:
@@ -207,7 +217,8 @@ while running:
             player = -1
             break
 
-    print("left the loop!")
+    print("Main.py: left the player-turns loop!")
+    print("Main.py: running Guy logic.")
     # run game logic
     positionsUpdated = 0
     updateTracker = [ #array to make sure every guy gets updated, even at random
@@ -231,15 +242,17 @@ while running:
             mode, detail = (gameGrid[x][y]).decision() # returns "move" or "attack" and target_pos
             animateAction(gameGrid[x][y], mode, detail, x, y)
             drawBasics()
-            print("Updated on Guy.")
+            print("Main.py: Updated on Guy at x, y: " + str(x) + str(y))
             time.sleep(0.1) # simulate guy update/animation time
 
         updateTracker[x][y] = 1 # mark grid square as updated
         positionsUpdated += 1
 
-    print("end of 'running' loop.")
+    print("Main.py: end of 'running' loop.")
     drawBasics()
+
     time.sleep(2) # DEBUG
+
     # flip() the display to put your work on screen
     pygame.display.flip()
     clock.tick(60)  # limits FPS to 60
