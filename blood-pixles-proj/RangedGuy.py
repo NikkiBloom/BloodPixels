@@ -1,13 +1,18 @@
+# Kai
+import random
 
 HEIGHT = 5
 WIDTH = 6
 
 class RangedGuy:
     def __init__(self, team: str):
+        self.guy_type = "ranged"
+        self.player = 1 # default; update to "2" if necessary in main.py
         self.range = 2
-        self.team = team
+        self.sprites = [] # update in main.py
+        self.guyNum = 0 # 0 by default; assign random ID in main.py
        
-
+    # Makes decision for the Guy. Returns "attack" and target_pos OR "move" and none.
     def decision(self, grid, posx, posy):
      
         attackable = []
@@ -34,4 +39,4 @@ class RangedGuy:
         else:
             # No enemies 
             print(f"Moving to ({posx}, {posy})")
-            return "move", None
+            return "move", "left"
