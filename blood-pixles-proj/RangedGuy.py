@@ -28,7 +28,7 @@ class RangedGuy:
        
         for nx, ny in reachable:
             if 0 <= nx < HEIGHT and 0 <= ny < WIDTH:
-                target = grid[nx][ny]
+                target = grid[ny][nx]
                 # Check if there is an enemy at that spot
                 if target != 0 and target.team != self.team:
                     attackable.append((nx, ny))

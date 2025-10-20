@@ -25,8 +25,8 @@ class SpecialGuy:
                 nx, ny = posx + dx, posy + dy
 
                 # Check if the target is on the board
-                if 0 <= nx < HEIGHT and 0 <= ny < WIDTH:
-                    target = grid[nx][ny]
+                if 0 <= ny < HEIGHT and 0 <= nx < WIDTH:
+                    target = grid[ny][nx]
                     if target != 0 and target.team != self.team:
                         dist = abs(dx) + abs(dy)
                         attackable.append({'pos': (nx, ny), 'dist': dist})
