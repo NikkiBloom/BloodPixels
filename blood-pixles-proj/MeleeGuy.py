@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class MeleeGuy:
     def __init__(self, team: str):
