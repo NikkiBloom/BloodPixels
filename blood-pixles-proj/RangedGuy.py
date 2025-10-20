@@ -9,6 +9,7 @@ class RangedGuy:
         self.guy_type = "ranged"
         self.player = 1 # default; update to "2" if necessary in main.py
         self.range = 2
+        self.team = team
         self.sprites = [] # update in main.py
         self.guyNum = 0 # 0 by default; assign random ID in main.py
        
