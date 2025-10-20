@@ -1,11 +1,16 @@
+# Connor
+
 import pygame
 import random
 
 class MeleeGuy:
     def __init__(self, team: str):
+        self.guy_type = "melee"
+        self.player = 1 # default; update to "2" if necessary in main.py
         self.range=1
         self.team=team
-        self.sprite
+        self.sprites = [] # update in main.py
+        self.guyNum = 0 # 0 by default; update in main.py
 
     def decision(grid, posx, posy):
         reachable=[] # All the grid spaces that MeleeGuy can see
@@ -26,4 +31,3 @@ class MeleeGuy:
             # Choose who to attack
         # else:
             # Move
-

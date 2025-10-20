@@ -10,8 +10,7 @@ import time # debug timers
 
 # --- SETUP VARIABLES --- #
 # Game setup
-gameGrid = [ # represents game grid
-    [0, 0, 0, 0, 0, 0], 
+gameGrid = [ # represents game grid. 0 represents an empty position.
     [0, 0, 0, 0, 0, 0], 
     [0, 0, 0, 0, 0, 0], 
     [0, 0, 0, 0, 0, 0], 
@@ -19,8 +18,12 @@ gameGrid = [ # represents game grid
     [0, 0, 0, 0, 0, 0]
 ]
 
+# 0 - empty, 1 - melee, 2 - ranged, 3 - special
 player1Cards = [0, 0, 0, 0]
 player2Cards = [0, 0, 0, 0]
+def drawCards(cardSet):
+    for card in cardSet:
+        card = random.randint(1, 3)
 
 # Window setup
 pygame.init()
@@ -38,26 +41,123 @@ background_image = pygame.image.load(image_path).convert_alpha()
 # Scale the image to fit the screen size
 background_image = pygame.transform.scale(background_image, (windowWidth, windowHeight))
 
+# arrays for sprite sets
+def makeSprites(type):
+    image_folder_path = os.path.join(current_dir, 'image-files', type) # pulls correct image folder path
+        
+    # put images into spriteSet array for animation
+    spriteSet = [pygame.image.load(os.path.join(image_folder_path, 'stand')),
+                    pygame.image.load(os.path.join(image_folder_path, 'walk1')),
+                    pygame.image.load(os.path.join(image_folder_path, 'walk2')),
+                pygame.image.load(os.path.join(image_folder_path, 'attack'))]
+    
+    return spriteSet
+# make sprite sheets
+p1RangedSprites = makeSprites("p1Ranged") 
+p1MeleeSprites = makeSprites("p1Melee") 
+p1SpecialSprites = makeSprites("p1Special") 
+
+p2RangedSprites = makeSprites("p2Ranged") 
+p2MeleeSprites = makeSprites("p2Melee") 
+p2SpecialSprites = makeSprites("p2Special") 
 
 # --- HELPER FUNCTIONS --- #
-def drawBasics():
+
+# returns center of pixel of grid square
+# (chat GPT FTW)
+def getTrueCoord(row, guy, gameGrid):
+    tile_size=108
+    screen_width=windowWidth
+    screen_height=windowHeight
+    # grid offsets
+    cols = 6
+    rows = 5
+    grid_width = cols * tile_size
+    grid_height = rows * tile_size
+
+    offset_x = (screen_width - grid_width) // 2
+    offset_y = 0  # aligned to top
+
+    # find grid position
+    row_index = gameGrid.index(row)
+    col_index = row.index(guy)
+
+    # compute pixel coordinates for center of the cell
+    x = offset_x + col_index * tile_size + tile_size // 2
+    y = offset_y + row_index * tile_size + tile_size // 2
+
+    return x, y
+
+def drawBasics(notThisGuy):
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     # load in background
     screen.blit(background_image, (0, 0))
-
-    # draw towers
-
     # draw Guys
     # ~ 108 x 108 pixel square
+    for row in gameGrid:
+        for guy in row:
+            if guy != 0:
+                if guy.guyNum == notThisGuy:
+                    continue
+                else:
+                    x, y = getTrueCoord(row, guy, gameGrid)
+                    image = guy.sprites[0] # "standing" sprite
+                    rect = image.get_rect()
+                    rect.center = (x, y)
+                    screen.blit(guy.sprites[0], (x,y))
 
     pygame.display.flip()
     return
 
-def drawCards(cardSet):
-    # draw cards
-    return
+def animateAction(guy, mode, detail, x, y):
+    x, y = getTrueCoord(x, y)
 
+    if(mode == "attack"):
+        drawBasics(guy.guyNum)
+        image = guy.sprites[3] # "attacking" sprite
+        rect = image.get_rect()
+        rect.center = (x, y)
+        screen.blit(image, (x,y))
+
+        time.sleep(1)
+
+        drawBasics(guy.guyNum)
+        image = guy.sprites[0] # "standing" sprite
+        rect = image.get_rect()
+        x, y = getTrueCoord(x, y, gameGrid)
+        rect.center = (x, y)
+        screen.blit(image, (x,y))
+
+        gameGrid[x][y] = 0
+        gameGrid
+
+        print()
+
+    if(mode == "move"):
+        image = guy.sprites[2] #starts on 2 so it switches and animates starting at 1
+        FRAMES = 10 # frames to animate for
+        i = FRAMES
+        while (i < 108):
+            drawBasics(guy.guyNum)
+            # switch image
+            if image == guy.sprites[1]:
+                image = guy.sprites[2]
+            elif image == guy.sprites[2]:
+                image = guy.sprites[1]
+            #update this somehow
+            if detail == "up":
+                screen.blit(image, x, y+i)
+            elif detail == "down":
+                screen.blit(image, x, y-i)
+            elif detail == "left":
+                screen.blit(image, x-i, y)
+            elif detail == "right":
+                screen.blit(image, x+i, y)
+            i = i - (108/FRAMES)
+
+            pygame.display.flip()
+    return
 
 # --- MAIN LOOP --- #
 running = True
@@ -75,15 +175,21 @@ while running:
 
         if player == 1:
             # player 1 setup
+            drawCards(player1Cards)
             # blank right half of screen
             pygame.draw.rect(screen, "black", (windowWidth/2, 0, windowWidth/2, windowHeight))
             # pull up P1 cards
         
         if player == 2:
             # player 2 setup
+            drawCards(player2Cards)
             # blank left half of screen
             pygame.draw.rect(screen, "black", (0, 0, windowWidth/2, windowHeight))
             # pull up P2 cards
+
+        ## EVENTS ##
+        # pick / place cards loop
+            # update guy.player
 
         pygame.display.flip()
 
@@ -122,7 +228,8 @@ while running:
             y = random.randint(0, 5)
         
         if(gameGrid[x][y] != 0): # there is a guy at x, y
-            # (gameGrid[x][y]).update() # update guy
+            mode, detail = (gameGrid[x][y]).decision() # returns "move" or "attack" and target_pos
+            animateAction(gameGrid[x][y], mode, detail, x, y)
             drawBasics()
             print("Updated on Guy.")
             time.sleep(0.1) # simulate guy update/animation time
